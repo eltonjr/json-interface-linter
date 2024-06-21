@@ -3,9 +3,9 @@ package main
 import (
 	"golang.org/x/tools/go/analysis/singlechecker"
 
-	"github.com/eltonjr/json-interface-linter/analyzer"
+	"github.com/eltonjr/json-interface-linter/jsontag"
 )
 
 func main() {
-	singlechecker.Main(analyzer.Analyzer)
+	singlechecker.Main(jsontag.Analyzer)
 }

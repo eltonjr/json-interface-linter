@@ -1,4 +1,4 @@
-package analyzer
+package jsontag
 
 import (
 	"os"
@@ -15,5 +15,5 @@ func TestStructTag(t *testing.T) {
 	}
 
 	testdata := filepath.Join(filepath.Dir(wd), "testdata")
-	analysistest.Run(t, testdata, Analyzer, "struct-tag")
+	analysistest.Run(t, testdata, Analyzer, "jsontag")
 }

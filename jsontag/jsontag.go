@@ -17,38 +17,41 @@ var Analyzer = &analysis.Analyzer{
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {
-	inspector := inspector.New(pass.Files)
-	inspector.Preorder(nil, func(n ast.Node) {
-		switch n := n.(type) {
-		case *ast.StructType:
-			for _, field := range n.Fields.List {
-				if field.Tag == nil {
-					continue
-				}
-				if !strings.Contains(field.Tag.Value, "json") || strings.Contains(field.Tag.Value, "json:\"-\"") {
-					continue
-				}
+	inspector := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
-				fieldType, ok := field.Type.(*ast.Ident)
-				if !ok {
-					continue
-				}
-				// skip basic types
-				if fieldType.Obj == nil {
-					continue
-				}
+	nodeFilter := []ast.Node{ // filter needed nodes: visit only them
+		(*ast.StructType)(nil),
+	}
 
-				typeSpec, ok := fieldType.Obj.Decl.(*ast.TypeSpec)
-				if !ok {
-					continue
-				}
-				_, ok = typeSpec.Type.(*ast.InterfaceType)
-				if !ok {
-					continue
-				}
-
-				pass.Reportf(field.Pos(), "interface field %s is exported as json attribute", field.Names[0].Name)
+	inspector.Preorder(nodeFilter, func(node ast.Node) {
+		n := node.(*ast.StructType)
+		for _, field := range n.Fields.List {
+			if field.Tag == nil {
+				continue
 			}
+			if !strings.Contains(field.Tag.Value, "json") || strings.Contains(field.Tag.Value, "json:\"-\"") {
+				continue
+			}
+
+			fieldType, ok := field.Type.(*ast.Ident)
+			if !ok {
+				continue
+			}
+			// skip basic types
+			if fieldType.Obj == nil {
+				continue
+			}
+
+			typeSpec, ok := fieldType.Obj.Decl.(*ast.TypeSpec)
+			if !ok {
+				continue
+			}
+			_, ok = typeSpec.Type.(*ast.InterfaceType)
+			if !ok {
+				continue
+			}
+
+			pass.Reportf(field.Pos(), "interface field %s is exported as json attribute", field.Names[0].Name)
 		}
 	})
 	return nil, nil

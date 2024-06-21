@@ -11,6 +11,10 @@ type ExportedInterface struct {
 	Ifield I `json:"i"` // want `interface field Ifield is exported as json attribute`
 }
 
+type ExportedInterfaceSkipped struct {
+	Ifield I `json:"-"`
+}
+
 type ExportedField struct {
 	ExportedField int `json:"exported_field"`
 }

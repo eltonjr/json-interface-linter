@@ -25,7 +25,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				if field.Tag == nil {
 					continue
 				}
-				if !strings.Contains(field.Tag.Value, "json") {
+				if !strings.Contains(field.Tag.Value, "json") || strings.Contains(field.Tag.Value, "json:\"-\"") {
 					continue
 				}
 

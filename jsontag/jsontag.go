@@ -2,6 +2,7 @@ package jsontag
 
 import (
 	"go/ast"
+	"go/types"
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
@@ -10,8 +11,8 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name:     "jsoninterface",
-	Doc:      "Check if serialized structs contain an interface",
+	Name:     "jsontag",
+	Doc:      "Check if structs tagged as json contain an interface",
 	Run:      run,
 	Requires: []*analysis.Analyzer{inspect.Analyzer},
 }
@@ -33,21 +34,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				continue
 			}
 
-			fieldType, ok := field.Type.(*ast.Ident)
-			if !ok {
-				continue
-			}
-			// skip basic types
-			if fieldType.Obj == nil {
-				continue
-			}
-
-			typeSpec, ok := fieldType.Obj.Decl.(*ast.TypeSpec)
-			if !ok {
-				continue
-			}
-			_, ok = typeSpec.Type.(*ast.InterfaceType)
-			if !ok {
+			tav := pass.TypesInfo.Types[field.Type]
+			if !types.IsInterface(tav.Type) {
 				continue
 			}
 

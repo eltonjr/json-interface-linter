@@ -1,10 +1,10 @@
 package marshal
 
 import (
+	"flag"
 	"fmt"
 	"go/ast"
 	"go/types"
-	"strings"
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
@@ -12,11 +12,22 @@ import (
 	"golang.org/x/tools/go/types/typeutil"
 )
 
-var Analyzer = &analysis.Analyzer{
-	Name:     "marshal",
-	Doc:      "Check if marshaled structs contain an interface",
-	Run:      run,
-	Requires: []*analysis.Analyzer{inspect.Analyzer},
+func Analyzer(flags flag.FlagSet) (*analysis.Analyzer, error) {
+	if f := flags.Lookup("marshalers"); f != nil {
+		d, err := ReadMarshalers(f.Value.String())
+		if err != nil {
+			return nil, err
+		}
+		defaultMarshalers = d
+	}
+
+	return &analysis.Analyzer{
+		Name:     "marshal",
+		Doc:      "Check if marshaled structs contain an interface",
+		Run:      run,
+		Requires: []*analysis.Analyzer{inspect.Analyzer},
+		Flags:    flags,
+	}, nil
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {
@@ -35,12 +46,13 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		}
 
 		fnName := fmt.Sprintf("%s.%s", o.Pkg().Path(), o.Name())
-		if !strings.EqualFold(fnName, "encoding/json.Marshal") {
+		marshaler, found := isMarshaler(fnName, defaultMarshalers)
+		if !found {
 			return
 		}
 
 		// should we allow many arguments?
-		arg := n.Args[0]
+		arg := n.Args[marshaler.argument]
 
 		// dont allow marshal of interfaces
 		tav := pass.TypesInfo.Types[arg]

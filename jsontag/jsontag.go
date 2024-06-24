@@ -1,6 +1,7 @@
 package jsontag
 
 import (
+	"flag"
 	"go/ast"
 	"go/types"
 	"strings"
@@ -10,11 +11,14 @@ import (
 	"golang.org/x/tools/go/ast/inspector"
 )
 
-var Analyzer = &analysis.Analyzer{
-	Name:     "jsontag",
-	Doc:      "Check if structs tagged as json contain an interface",
-	Run:      run,
-	Requires: []*analysis.Analyzer{inspect.Analyzer},
+func Analyzer(flags flag.FlagSet) *analysis.Analyzer {
+	return &analysis.Analyzer{
+		Name:     "jsontag",
+		Doc:      "Check if structs tagged as json contain an interface",
+		Run:      run,
+		Requires: []*analysis.Analyzer{inspect.Analyzer},
+		Flags:    flags,
+	}
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {

@@ -31,4 +31,8 @@ func M() {
 	json.Marshal(struct { // want `interface field X is exported as json attribute`
 		X I
 	}{nil})
+
+	json.NewEncoder(nil).Encode(i)
+	json.NewEncoder(nil).Encode(wi)
+	json.NewEncoder(nil).Encode(woi)
 }

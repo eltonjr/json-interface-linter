@@ -1,0 +1,5 @@
+encode/json.Marshal
+encode/json.Encode
+github.com/gin-gonic/gin.JSON
+// custom encoder
+myencoder.Encode[1]

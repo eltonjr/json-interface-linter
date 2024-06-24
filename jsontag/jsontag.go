@@ -31,6 +31,10 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	inspector.Preorder(nodeFilter, func(node ast.Node) {
 		n := node.(*ast.StructType)
 		for _, field := range n.Fields.List {
+			if !field.Names[0].IsExported() {
+				continue
+			}
+
 			if field.Tag == nil {
 				continue
 			}

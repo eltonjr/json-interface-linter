@@ -26,3 +26,7 @@ type ExportedStruc struct {
 type UnexportedInterface struct {
 	I I
 }
+
+type UnexportedField struct {
+	i I `json:"i"`
+}

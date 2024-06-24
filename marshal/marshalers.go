@@ -3,6 +3,7 @@ package marshal
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"os"
 	"strconv"
 	"strings"
@@ -29,6 +30,8 @@ var defaultMarshalers = []marshaler{
 	},
 }
 
+var ErrEmptyLine = errors.New("empty line")
+
 // ReadMarshalers reads an marshalers file, a newline delimited file that lists
 // function calls to be checked
 //
@@ -53,32 +56,53 @@ func ReadMarshalers(path string) ([]marshaler, error) {
 	scanner := bufio.NewScanner(bytes.NewReader(buf))
 
 	for scanner.Scan() {
-		line := scanner.Text()
-		// Skip comments and empty lines.
-		if strings.HasPrefix(line, "//") || line == "" {
-			continue
-		}
-
-		ss := strings.Split(line, "[")
-		var argIndex int
-		if len(ss) > 1 {
-			i, err := strconv.Atoi(strings.TrimRight(ss[1], "]"))
-			if err != nil {
-				return nil, err
+		line := scanner.Bytes()
+		m, err := parseLine(line)
+		if err != nil {
+			if errors.Is(err, ErrEmptyLine) {
+				continue
 			}
-			argIndex = i
+			return nil, err
 		}
 
-		marshalers = append(marshalers, marshaler{
-			functionPath: ss[0],
-			argument:     argIndex,
-		})
+		marshalers = append(marshalers, m)
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
 
 	return marshalers, nil
+}
+
+func parseLine(line []byte) (marshaler, error) {
+	if len(line) <= 1 {
+		return marshaler{}, ErrEmptyLine
+	}
+	if line[0] == '/' && line[1] == '/' {
+		return marshaler{}, ErrEmptyLine
+	}
+
+	stringSize := bytes.IndexByte(line, '[')
+	if stringSize == -1 {
+		return marshaler{
+			functionPath: string(line),
+		}, nil
+	}
+
+	argSize := bytes.IndexByte(line[stringSize:], ']')
+	if argSize == -1 {
+		return marshaler{}, errors.New("missing closing bracket ]")
+	}
+
+	i, err := strconv.Atoi(string(line[stringSize+1 : stringSize+argSize]))
+	if err != nil {
+		return marshaler{}, err
+	}
+
+	return marshaler{
+		functionPath: string(line[:stringSize]),
+		argument:     i,
+	}, nil
 }
 
 func isMarshaler(path string, marshalers []marshaler) (marshaler, bool) {

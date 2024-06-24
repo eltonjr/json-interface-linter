@@ -1,6 +1,10 @@
 package marshal
 
 import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -46,5 +50,41 @@ func TestUseDefaultIfEmptyString(t *testing.T) {
 
 	if !reflect.DeepEqual(marshalers, expectedMarshalers) {
 		t.Errorf("Expected marshalers %v, got %v", expectedMarshalers, marshalers)
+	}
+}
+
+func BenchmarkParseLine(b *testing.B) {
+	buf, err := os.ReadFile("testdata/valid.txt")
+	if err != nil {
+		b.Fatalf("Failed to read marshalers: %s", err)
+		return
+	}
+
+	b.ResetTimer()
+	lastline := ""
+	for i := 0; i < b.N; i++ {
+		scanner := bufio.NewScanner(bytes.NewReader(buf))
+
+		for scanner.Scan() {
+			line := scanner.Bytes()
+			m, _ := parseLine(line)
+			lastline = m.functionPath
+		}
+	}
+	fmt.Println(lastline)
+}
+
+func TestParseLine(t *testing.T) {
+	buf, err := os.ReadFile("testdata/valid.txt")
+	if err != nil {
+		t.Fatalf("Failed to read marshalers: %s", err)
+		return
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(buf))
+
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		parseLine(line)
 	}
 }

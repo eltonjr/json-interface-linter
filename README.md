@@ -19,3 +19,13 @@ Then you can run it at the root of your package
 cd <path-to-my-package>
 json-interface  ./...
 ```
+
+### TODO
+- [ ] Check nested (recursive) fields
+- [ ] If 1 field has json tag, assume the whole struct is exposed and check every other
+- [x] skip `json:"-"`
+- [x] json.Marshal
+- [x] encoder.Encode
+- [x] chi / gin
+- [ ] Check if map has any interface
+- [ ] Verbose mode

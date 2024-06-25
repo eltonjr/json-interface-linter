@@ -1,11 +1,9 @@
 package marshal
 
 import (
-	"bufio"
-	"bytes"
-	"fmt"
-	"os"
+	"errors"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -15,6 +13,8 @@ func TestReadMarshalers(t *testing.T) {
 		{"encode/json.Encode", 0},
 		{"github.com/gin-gonic/gin.JSON", 0},
 		{"myencoder.Encode", 1},
+		{"f", 0},
+		{"x.y", 1},
 	}
 
 	marshalers, err := ReadMarshalers("testdata/valid.txt")
@@ -40,6 +40,28 @@ func TestEmptyFile(t *testing.T) {
 	}
 }
 
+func TestInvalidBracket(t *testing.T) {
+	_, err := ReadMarshalers("testdata/invalid_bracket.txt")
+	if err == nil {
+		t.Fatal("Invalid file should fail")
+	}
+
+	if err != ErrMissingClosingBracket {
+		t.Errorf("Expected error %v, got %v", ErrMissingClosingBracket, err)
+	}
+}
+
+func TestInvalidInt(t *testing.T) {
+	_, err := ReadMarshalers("testdata/invalid_int.txt")
+	if err == nil {
+		t.Fatal("Invalid file should fail")
+	}
+
+	if !errors.Is(err, strconv.ErrSyntax) {
+		t.Errorf("Expected error %v, got %v", strconv.ErrSyntax, err)
+	}
+}
+
 func TestUseDefaultIfEmptyString(t *testing.T) {
 	expectedMarshalers := defaultMarshalers
 
@@ -50,41 +72,5 @@ func TestUseDefaultIfEmptyString(t *testing.T) {
 
 	if !reflect.DeepEqual(marshalers, expectedMarshalers) {
 		t.Errorf("Expected marshalers %v, got %v", expectedMarshalers, marshalers)
-	}
-}
-
-func BenchmarkParseLine(b *testing.B) {
-	buf, err := os.ReadFile("testdata/valid.txt")
-	if err != nil {
-		b.Fatalf("Failed to read marshalers: %s", err)
-		return
-	}
-
-	b.ResetTimer()
-	lastline := ""
-	for i := 0; i < b.N; i++ {
-		scanner := bufio.NewScanner(bytes.NewReader(buf))
-
-		for scanner.Scan() {
-			line := scanner.Bytes()
-			m, _ := parseLine(line)
-			lastline = m.functionPath
-		}
-	}
-	fmt.Println(lastline)
-}
-
-func TestParseLine(t *testing.T) {
-	buf, err := os.ReadFile("testdata/valid.txt")
-	if err != nil {
-		t.Fatalf("Failed to read marshalers: %s", err)
-		return
-	}
-
-	scanner := bufio.NewScanner(bytes.NewReader(buf))
-
-	for scanner.Scan() {
-		line := scanner.Bytes()
-		parseLine(line)
 	}
 }

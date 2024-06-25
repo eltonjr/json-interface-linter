@@ -32,7 +32,7 @@ func M() {
 		X I
 	}{nil})
 
-	json.NewEncoder(nil).Encode(i)
-	json.NewEncoder(nil).Encode(wi)
+	json.NewEncoder(nil).Encode(i)  // want `interface value marshal.I is exported as json`
+	json.NewEncoder(nil).Encode(wi) // want `interface field I is exported as json attribute`
 	json.NewEncoder(nil).Encode(woi)
 }

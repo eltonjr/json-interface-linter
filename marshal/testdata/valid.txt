@@ -1,5 +1,13 @@
 encode/json.Marshal
 encode/json.Encode
 github.com/gin-gonic/gin.JSON
+
 // custom encoder
 myencoder.Encode[1]
+
+//
+// single functions can work as well
+f
+
+// characters after brackets are discarded
+x.y[1]z

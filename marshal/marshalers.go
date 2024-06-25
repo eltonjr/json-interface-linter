@@ -30,7 +30,7 @@ var defaultMarshalers = []marshaler{
 	},
 }
 
-var ErrEmptyLine = errors.New("empty line")
+var ErrMissingClosingBracket = errors.New("missing closing bracket ']'")
 
 // ReadMarshalers reads an marshalers file, a newline delimited file that lists
 // function calls to be checked
@@ -57,52 +57,41 @@ func ReadMarshalers(path string) ([]marshaler, error) {
 
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		m, err := parseLine(line)
+		if len(line) == 0 {
+			continue
+		}
+		if len(line) >= 2 && line[0] == '/' && line[1] == '/' {
+			continue
+		}
+
+		stringSize := bytes.IndexByte(line, '[')
+		if stringSize == -1 {
+			marshalers = append(marshalers, marshaler{
+				functionPath: string(line),
+			})
+			continue
+		}
+
+		argSize := bytes.IndexByte(line[stringSize:], ']')
+		if argSize == -1 {
+			return nil, ErrMissingClosingBracket
+		}
+
+		i, err := strconv.Atoi(string(line[stringSize+1 : stringSize+argSize]))
 		if err != nil {
-			if errors.Is(err, ErrEmptyLine) {
-				continue
-			}
 			return nil, err
 		}
 
-		marshalers = append(marshalers, m)
+		marshalers = append(marshalers, marshaler{
+			functionPath: string(line[:stringSize]),
+			argument:     i,
+		})
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
 
 	return marshalers, nil
-}
-
-func parseLine(line []byte) (marshaler, error) {
-	if len(line) <= 1 {
-		return marshaler{}, ErrEmptyLine
-	}
-	if line[0] == '/' && line[1] == '/' {
-		return marshaler{}, ErrEmptyLine
-	}
-
-	stringSize := bytes.IndexByte(line, '[')
-	if stringSize == -1 {
-		return marshaler{
-			functionPath: string(line),
-		}, nil
-	}
-
-	argSize := bytes.IndexByte(line[stringSize:], ']')
-	if argSize == -1 {
-		return marshaler{}, errors.New("missing closing bracket ]")
-	}
-
-	i, err := strconv.Atoi(string(line[stringSize+1 : stringSize+argSize]))
-	if err != nil {
-		return marshaler{}, err
-	}
-
-	return marshaler{
-		functionPath: string(line[:stringSize]),
-		argument:     i,
-	}, nil
 }
 
 func isMarshaler(path string, marshalers []marshaler) (marshaler, bool) {

@@ -1,4 +1,4 @@
-package jsontag
+package main
 
 import (
 	"flag"
@@ -17,6 +17,6 @@ func TestJSONTag(t *testing.T) {
 		t.Fatalf("Failed to get wd: %s", err)
 	}
 
-	testdata := filepath.Join(filepath.Dir(wd), "testdata")
-	analysistest.Run(t, testdata, Analyzer(defaultFlags), "jsontag")
+	testdata := filepath.Join(wd, "testdata")
+	analysistest.Run(t, testdata, jsontagAnalyzer(defaultFlags), "jsontag")
 }

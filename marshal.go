@@ -1,4 +1,4 @@
-package marshal
+package main
 
 import (
 	"flag"
@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/types/typeutil"
 )
 
-func Analyzer(flags flag.FlagSet) (*analysis.Analyzer, error) {
+func marshalAnalyzer(flags flag.FlagSet) (*analysis.Analyzer, error) {
 	if f := flags.Lookup("marshalers"); f != nil {
 		d, err := ReadMarshalers(f.Value.String())
 		if err != nil {
@@ -24,13 +24,13 @@ func Analyzer(flags flag.FlagSet) (*analysis.Analyzer, error) {
 	return &analysis.Analyzer{
 		Name:     "marshal",
 		Doc:      "Check if marshaled structs contain an interface",
-		Run:      run,
+		Run:      runMarshal,
 		Requires: []*analysis.Analyzer{inspect.Analyzer},
 		Flags:    flags,
 	}, nil
 }
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func runMarshal(pass *analysis.Pass) (interface{}, error) {
 	inspector := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
 	nodeFilter := []ast.Node{ // filter needed nodes: visit only them

@@ -1,4 +1,4 @@
-package jsontag
+package main
 
 import (
 	"flag"
@@ -11,17 +11,17 @@ import (
 	"golang.org/x/tools/go/ast/inspector"
 )
 
-func Analyzer(flags flag.FlagSet) *analysis.Analyzer {
+func jsontagAnalyzer(flags flag.FlagSet) *analysis.Analyzer {
 	return &analysis.Analyzer{
 		Name:     "jsontag",
 		Doc:      "Check if structs tagged as json contain an interface",
-		Run:      run,
+		Run:      runJSONTag,
 		Requires: []*analysis.Analyzer{inspect.Analyzer},
 		Flags:    flags,
 	}
 }
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func runJSONTag(pass *analysis.Pass) (interface{}, error) {
 	inspector := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
 	nodeFilter := []ast.Node{ // filter needed nodes: visit only them

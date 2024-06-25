@@ -4,15 +4,12 @@ import (
 	"flag"
 
 	"golang.org/x/tools/go/analysis/multichecker"
-
-	"github.com/eltonjr/json-interface-linter/jsontag"
-	"github.com/eltonjr/json-interface-linter/marshal"
 )
 
 func main() {
 	flags := parseFlags()
-	ja := jsontag.Analyzer(flags)
-	ma, err := marshal.Analyzer(flags)
+	ja := jsontagAnalyzer(flags)
+	ma, err := marshalAnalyzer(flags)
 	if err != nil {
 		panic(err)
 	}

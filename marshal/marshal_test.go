@@ -17,7 +17,7 @@ func TestMarshal(t *testing.T) {
 		t.Fatalf("Failed to get wd: %s", err)
 	}
 
-	testdata := filepath.Join(filepath.Dir(wd), "testdata")
+	testdata := filepath.Join(wd, "testdata")
 	ma, _ := Analyzer(defaultFlags)
 	analysistest.Run(t, testdata, ma, "marshal")
 }
@@ -28,9 +28,9 @@ func TestMarshalCustom(t *testing.T) {
 		t.Fatalf("Failed to get wd: %s", err)
 	}
 
-	testdata := filepath.Join(filepath.Dir(wd), "testdata")
+	testdata := filepath.Join(wd, "testdata")
 	fs := flag.NewFlagSet("marshal", flag.ExitOnError)
-	fs.String("marshalers", filepath.Join(filepath.Dir(wd), "testdata/src/marshal_custom/marshalers.txt"), "path to marshalers file")
+	fs.String("marshalers", filepath.Join(wd, "testdata/src/marshal_custom/marshalers.txt"), "path to marshalers file")
 	ma, err := Analyzer(*fs)
 	if err != nil {
 		t.Fatalf("Failed to create analyzer: %s", err)

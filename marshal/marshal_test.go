@@ -30,11 +30,11 @@ func TestMarshalCustom(t *testing.T) {
 
 	testdata := filepath.Join(wd, "testdata")
 	fs := flag.NewFlagSet("marshal", flag.ExitOnError)
-	fs.String("marshalers", filepath.Join(wd, "testdata/src/marshal_custom/marshalers.txt"), "path to marshalers file")
+	fs.String("marshalers", filepath.Join(wd, "testdata/src/marshalcustom/marshalers.txt"), "path to marshalers file")
 	ma, err := Analyzer(*fs)
 	if err != nil {
 		t.Fatalf("Failed to create analyzer: %s", err)
 	}
 
-	analysistest.Run(t, testdata, ma, "marshal_custom")
+	analysistest.Run(t, testdata, ma, "marshalcustom")
 }

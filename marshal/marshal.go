@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"go/ast"
-	"go/types"
 
+	"github.com/eltonjr/json-interface-linter/analyzer"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
 	"golang.org/x/tools/go/ast/inspector"
@@ -54,29 +54,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		// should we allow many arguments?
 		arg := n.Args[marshaler.argument]
 
-		// dont allow marshal of interfaces
 		tav := pass.TypesInfo.Types[arg]
-		if types.IsInterface(tav.Type) {
-			pass.Reportf(arg.Pos(), "interface value %s is exported as json", tav.Type.String())
-			return
-		}
-
-		argType := tav.Type.Underlying()
-		s, ok := argType.(*types.Struct)
-		if !ok {
-			return
-		}
-
-		for i := 0; i < s.NumFields(); i++ {
-			field := s.Field(i)
-			if !field.Exported() {
-				continue
-			}
-
-			if types.IsInterface(field.Type()) {
-				pass.Reportf(arg.Pos(), "interface field %s is exported as json attribute", field.Name())
-			}
-		}
+		analyzer.CheckType(pass, n.Pos(), tav.Type)
 	})
 	return nil, nil
 }

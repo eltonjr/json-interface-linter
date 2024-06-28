@@ -18,7 +18,7 @@ type WOI struct {
 
 func M() {
 	wi := WI{}
-	Encode(context.Background(), wi) // want `interface field I is exported as json attribute`
+	Encode(context.Background(), wi) // want `interface marshalcustom.I is exported as json`
 
 	woi := WOI{}
 	Encode(context.Background(), woi)

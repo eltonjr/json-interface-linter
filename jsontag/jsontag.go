@@ -3,9 +3,8 @@ package jsontag
 import (
 	"flag"
 	"go/ast"
-	"go/types"
-	"strings"
 
+	"github.com/eltonjr/json-interface-linter/analyzer"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
 	"golang.org/x/tools/go/ast/inspector"
@@ -30,25 +29,12 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 	inspector.Preorder(nodeFilter, func(node ast.Node) {
 		n := node.(*ast.StructType)
-		for _, field := range n.Fields.List {
-			if !field.Names[0].IsExported() {
-				continue
-			}
 
-			if field.Tag == nil {
-				continue
-			}
-			if !strings.Contains(field.Tag.Value, "json") || strings.Contains(field.Tag.Value, "json:\"-\"") {
-				continue
-			}
-
-			tav := pass.TypesInfo.Types[field.Type]
-			if !types.IsInterface(tav.Type) {
-				continue
-			}
-
-			pass.Reportf(field.Pos(), "interface field %s is exported as json attribute", field.Names[0].Name)
+		if !analyzer.HasJSONTag(n) {
+			return
 		}
+
+		analyzer.CheckStructType(pass, n)
 	})
 	return nil, nil
 }

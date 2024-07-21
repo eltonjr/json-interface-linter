@@ -1,32 +1,21 @@
 package main
 
 import (
-	"flag"
-
 	"golang.org/x/tools/go/analysis/multichecker"
 
+	"github.com/eltonjr/json-interface-linter/analyzer"
+	"github.com/eltonjr/json-interface-linter/internal/logger"
 	"github.com/eltonjr/json-interface-linter/jsontag"
 	"github.com/eltonjr/json-interface-linter/marshal"
 )
 
 func main() {
-	flags := parseFlags()
-	ja := jsontag.Analyzer(flags)
-	ma, err := marshal.Analyzer(flags)
-	if err != nil {
-		panic(err)
-	}
+	logger.RegisterFlags()
+	analyzer.RegisterFlags()
+	marshal.RegisterFlags()
 
 	multichecker.Main(
-		ja,
-		ma,
+		jsontag.Analyzer,
+		marshal.Analyzer,
 	)
-}
-
-func parseFlags() flag.FlagSet {
-	flags := flag.NewFlagSet("json-interface-linter", flag.ExitOnError)
-
-	flags.String("marshalers", "", "path to marshalers file")
-
-	return *flags
 }

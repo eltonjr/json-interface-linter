@@ -1,6 +1,7 @@
 package analyzer
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
@@ -36,7 +37,7 @@ func CheckStructType(pass *analysis.Pass, s *ast.StructType) {
 
 func CheckType(pass *analysis.Pass, pos token.Pos, t types.Type) {
 	if types.IsInterface(t) {
-		pass.Reportf(pos, "interface %s is exported as json", t.String())
+		reportOrExclude(pass, pos, t.String(), fmt.Sprintf("interface %s is exported as json", t.String()))
 	}
 
 	switch t := t.Underlying().(type) {
@@ -62,6 +63,6 @@ func CheckStruct(pass *analysis.Pass, pos token.Pos, s *types.Struct) {
 
 func CheckMap(pass *analysis.Pass, pos token.Pos, m *types.Map) {
 	if types.IsInterface(m.Elem().Underlying()) {
-		pass.Reportf(pos, "interface %s is exported as json", m.Elem().String())
+		reportOrExclude(pass, pos, m.Elem().String(), fmt.Sprintf("interface %s is exported as json", m.Elem().String()))
 	}
 }

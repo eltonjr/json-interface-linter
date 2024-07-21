@@ -1,0 +1,6 @@
+errors
+myapp.MyInterface
+interface{}
+any
+
+// ignore comments

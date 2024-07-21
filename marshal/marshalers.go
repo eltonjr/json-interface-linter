@@ -7,6 +7,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+
+	"github.com/eltonjr/json-interface-linter/internal/logger"
 )
 
 // marshaler represent which function is used to marshal a value.
@@ -31,6 +34,31 @@ var defaultMarshalers = []marshaler{
 }
 
 var ErrMissingClosingBracket = errors.New("missing closing bracket ']'")
+
+var (
+	marshalerspath string
+	once           sync.Once
+)
+
+func RegisterFlags() {
+	Analyzer.Flags.StringVar(&marshalerspath, "marshalers", "", "file containing a list of custom marshalers to consider")
+}
+
+func initMarshalers() {
+	once.Do(func() {
+		if marshalerspath != "" {
+			d, err := ReadMarshalers(marshalerspath)
+			if err != nil {
+				logger.Debugf("failed to read marshalers: %s", err)
+			}
+			defaultMarshalers = d
+		} else {
+			logger.Debugf("no marshalers file provided")
+		}
+
+		logger.Debugf("will consider these as marshal functions: %v", defaultMarshalers)
+	})
+}
 
 // ReadMarshalers reads an marshalers file, a newline delimited file that lists
 // function calls to be checked

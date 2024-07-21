@@ -1,15 +1,13 @@
 package marshal
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"golang.org/x/tools/go/analysis/analysistest"
 )
-
-var defaultFlags = flag.FlagSet{}
 
 func TestMarshal(t *testing.T) {
 	wd, err := os.Getwd()
@@ -18,8 +16,7 @@ func TestMarshal(t *testing.T) {
 	}
 
 	testdata := filepath.Join(wd, "testdata")
-	ma, _ := Analyzer(defaultFlags)
-	analysistest.Run(t, testdata, ma, "marshal")
+	analysistest.Run(t, testdata, Analyzer, "marshal")
 }
 
 func TestMarshalCustom(t *testing.T) {
@@ -29,12 +26,9 @@ func TestMarshalCustom(t *testing.T) {
 	}
 
 	testdata := filepath.Join(wd, "testdata")
-	fs := flag.NewFlagSet("marshal", flag.ExitOnError)
-	fs.String("marshalers", filepath.Join(wd, "testdata/src/marshalcustom/marshalers.txt"), "path to marshalers file")
-	ma, err := Analyzer(*fs)
-	if err != nil {
-		t.Fatalf("Failed to create analyzer: %s", err)
-	}
+	marshalerspath = "testdata/src/marshalcustom/marshalers.txt"
 
-	analysistest.Run(t, testdata, ma, "marshalcustom")
+	// reset once so it loads the marshalers from the new path
+	once = sync.Once{}
+	analysistest.Run(t, testdata, Analyzer, "marshalcustom")
 }

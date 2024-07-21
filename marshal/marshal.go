@@ -1,36 +1,28 @@
 package marshal
 
 import (
-	"flag"
 	"fmt"
 	"go/ast"
 
-	"github.com/eltonjr/json-interface-linter/analyzer"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
 	"golang.org/x/tools/go/ast/inspector"
 	"golang.org/x/tools/go/types/typeutil"
+
+	"github.com/eltonjr/json-interface-linter/analyzer"
 )
 
-func Analyzer(flags flag.FlagSet) (*analysis.Analyzer, error) {
-	if f := flags.Lookup("marshalers"); f != nil {
-		d, err := ReadMarshalers(f.Value.String())
-		if err != nil {
-			return nil, err
-		}
-		defaultMarshalers = d
-	}
-
-	return &analysis.Analyzer{
-		Name:     "marshal",
-		Doc:      "Check if marshaled structs contain an interface",
-		Run:      run,
-		Requires: []*analysis.Analyzer{inspect.Analyzer},
-		Flags:    flags,
-	}, nil
+var Analyzer = &analysis.Analyzer{
+	Name:     "marshal",
+	Doc:      "Check if marshaled structs contain an interface",
+	Run:      run,
+	Requires: []*analysis.Analyzer{inspect.Analyzer},
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {
+	analyzer.InitExcluders()
+	initMarshalers()
+
 	inspector := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
 	nodeFilter := []ast.Node{ // filter needed nodes: visit only them
@@ -42,6 +34,11 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 		o := typeutil.Callee(pass.TypesInfo, n)
 		if o == nil {
+			return
+		}
+
+		// probably a builtin function like make or new
+		if o.Pkg() == nil {
 			return
 		}
 

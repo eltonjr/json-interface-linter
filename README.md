@@ -2,7 +2,7 @@
 
 Checks a go module to ensure no data structure containing an interface is being marshaled as json.
 
-This can be used to validate the suitability for a drop-in replacement of a json encoder.  
+This can be used to validate the suitability for a drop-in replacement of a json encoder.
 Some of these encoders do not allow interfaces being marshaled, for performance reasons.
 
 ## Running
@@ -15,9 +15,11 @@ go install github.com/eltonjr/json-interface-linter@latest
 
 1. Run it at the root of the module
 
+Suggestion: don't validate test files
+
 ```
 cd <path-to-my-module>
-json-interface ./...
+json-interface -test=false ./...
 ```
 
 ## The linter
@@ -54,10 +56,10 @@ json.Encode          (from encode/json.Encoder)
 Custom marshalers can also be checked by being specified in a file and informed to the linter
 
 ```
-json-interface -marshalers=file.txt ./...
+json-interface -marshal.marshalers=file.txt ./...
 ```
 
-A custom marshaler can also inform which of the arguments is the value being marshaled.  
+A custom marshaler can also inform which of the arguments is the value being marshaled.
 Arguments are optional, positional and zero based, with zero as default.
 
 Example of a marshalers file:
@@ -75,3 +77,29 @@ This linter can be used individually with the following argument:
 ```
 json-interface -marshal ./...
 ```
+
+## Excluding false-positives
+
+If false-positives were found, they can be ignored by being specified in a file and informed to the linter
+
+```
+json-interface -exclude=exclude.txt
+```
+
+Example of an exclusion file:
+```
+errors
+any
+mypkg.MyInterface
+```
+
+## Supported flags
+
+| Flag                | Description                                                  | Default                                                                |
+|---------------------|--------------------------------------------------------------|------------------------------------------------------------------------|
+| -test               | Specifies whether to validate test files.                    | true                                                                   |
+| -jsontag            | Runs the jsontag linter.                                     | true                                                                   |
+| -marshal            | Runs the marshal linter.                                     | true                                                                   |
+| -marshal.marshalers | Specifies a file containing custom marshalers to be checked. | encoding/json.Marshal encoding/json.MarshalIndent encoding/json.Encode |
+| -exclude            | Specifies a file containing false-positives to be ignored.   | <empty>                                                                |
+| -verbose            | Logs every decision made by the linter. Useful for debug.    | false                                                                  |

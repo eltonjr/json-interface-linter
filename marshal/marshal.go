@@ -9,7 +9,7 @@ import (
 	"golang.org/x/tools/go/ast/inspector"
 	"golang.org/x/tools/go/types/typeutil"
 
-	"github.com/eltonjr/json-interface-linter/analyzer"
+	"github.com/eltonjr/json-interface-linter/internal/analyzer"
 )
 
 var Analyzer = &analysis.Analyzer{

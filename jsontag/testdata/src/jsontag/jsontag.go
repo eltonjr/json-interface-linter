@@ -27,6 +27,12 @@ type ExportedInterface struct {
 	hiddenInterface I `json:"i"`
 }
 
+// If some field from struct is being exported, it means the whole struct will be exported
+type HiddenInterface struct {
+	InterfaceField          I   // want `interface jsontag.I is exported as json`
+	TaggedNonInterfaceField int `json:"busted"`
+}
+
 type Constraint[T comparable] struct {
 	T T `json:"t"` // want `interface T is exported as json`
 }
@@ -38,4 +44,8 @@ type Recursive struct {
 
 type UnexportedInterface struct {
 	I I
+}
+
+type OtherTagsThatNotJSON struct {
+	I I `something`
 }

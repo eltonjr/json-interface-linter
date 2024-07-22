@@ -4,3 +4,6 @@ interface{}
 any
 
 // ignore comments
+//
+
+/a

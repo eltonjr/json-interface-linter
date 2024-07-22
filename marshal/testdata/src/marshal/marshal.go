@@ -14,6 +14,11 @@ type WI struct {
 	I I
 }
 
+type WHiddenI struct {
+	a int
+	I I
+}
+
 type W2I struct {
 	I  I
 	I2 I2
@@ -29,6 +34,9 @@ func M() {
 
 	wi := WI{}
 	json.Marshal(wi) // want `interface marshal.I is exported as json`
+
+	hidden := WHiddenI{}
+	json.Marshal(hidden) // want `interface marshal.I is exported as json`
 
 	w2i := W2I{}
 	json.Marshal(w2i) // want `interface marshal.I is exported as json` `interface marshal.I2 is exported as json`

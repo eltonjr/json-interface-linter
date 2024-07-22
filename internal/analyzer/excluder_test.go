@@ -16,6 +16,7 @@ func TestReadExclude(t *testing.T) {
 		"myapp.MyInterface",
 		"interface{}",
 		"any",
+		"/a", // nonsense for test purpose
 	}
 
 	if len(d) != len(expected) {
